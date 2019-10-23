@@ -16,10 +16,12 @@
     "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix"
   },
   "dependencies": {
+    "@types/moment": "^2.13.0",
     "@types/socket.io": "^2.1.4",
     "@types/socket.io-client": "^1.4.32",
     "dotenv": "^8.1.0",
     "lodash": "^4.17.15",
+    "moment": "^2.24.0",
     "mustache": "^3.1.0",
     "socket.io": "^2.3.0",
     "winston": "^3.2.1"

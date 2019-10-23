@@ -1,32 +1,52 @@
 import io from "socket.io-client";
 import { SUGAR_URI } from "./util/secrets";
-import { Task } from "./models/Task";
+import { Task, TaskStatus } from "./models/Task";
 import { Agent, AgentStatus } from "./models/Agent";
 import { networkInterface as net, hostname } from "./util/Local";
 
 import logger from "./util/logger";
 import { taskService } from "./api/TaskService";
+import { getAgentStatus } from "./api/AgentService";
 
 const socket = io(SUGAR_URI);
 
 function onTask(task: Task) {
-  console.log(task);
+  taskService.run(task);
 }
 
-function register() {
+/**
+ * 更新状态
+ */
+function update() {
+  if (socket.connected) {
+    socket.emit("register", {
+      mac: net.mac,
+      status: getAgentStatus(),
+      sid: socket.id
+    });
+  }
+  setTimeout(() => {
+    update();
+  }, 3000);
+}
+
+function register(status: AgentStatus) {
   const agent = new Agent();
   agent.ip = net.address;
   agent.mac = net.mac;
   agent.hostname = hostname;
-  agent.status = taskService.getAgentStatus();
+  agent.status = status;
   agent.sid = socket.id;
-  //logger.debug(taskService);
   socket.emit("register", agent);
+
+  setTimeout(() => {
+    update();
+  }, 3000);
 }
 
 function onRegister(isSuccess: any) {
   //接收服务器的注册任务
-  register();
+  register(AgentStatus.creating);
 }
 
 async function init() {
@@ -39,8 +59,6 @@ async function init() {
   socket.on("disconnect", function() {
     console.log("disconnected");
   });
-
-  taskService.run({});
 }
 
 init().then(() => {

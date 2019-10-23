@@ -1,12 +1,13 @@
-
-export interface Task  {
+export interface Task {
+  _id?: string;
   resourceType: TaskResourceType;
   resourceUrl: string;
   steps: TaskStep[];
   status: TaskStatus;
-  messages: Message[];
-};
 
+  createdAt: Date;
+  updatedAt: Date;
+}
 
 /**
  * 资源类型
@@ -29,19 +30,19 @@ export enum TaskStatus {
   /**
    * 创建的状态
    */
-  created,
+  created = "created",
   /**
    * 工作的状态
    */
-  working,
+  working = "working",
   /**
    * 执行成功的状态
    */
-  completed,
+  completed = "completed",
   /**
    * 执行失败的状态
    */
-  failed
+  failed = "failed"
 }
 
 /**
@@ -56,28 +57,28 @@ export interface TaskStep {
    * 命令
    */
   commands: string[];
+
+  message: Message;
   /**
    * 环境参数
    */
   envs: any;
 }
 
+export class Message {
+  taskId: string;
+  body: string;
+  /**
+   * 消息时间 yyyy-MM-dd HH:mm:ss
+   */
+  time: string;
+  /**
+   * 消息输出类型
+   */
+  stdType: StdType;
+}
 
-export interface Message {
-    taskId: string;
-    body: string;
-    /**
-     * 消息时间 yyyy-MM-dd HH:mm:ss
-     */
-    time: string;
-    /**
-     * 消息输出类型
-     */
-    stdType: StdType;
-  }
-  
-  export enum StdType {
-    out,
-    err
-  }
-
+export enum StdType {
+  out,
+  err
+}

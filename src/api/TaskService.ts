@@ -5,73 +5,68 @@ import { AgentStatus } from "../models/Agent";
 import { Task, TaskStatus } from "../models/Task";
 import { isEmpty } from "lodash";
 import { spawn, exec, execFile } from "child_process";
+import moment from "moment";
+
+import { saveAgentStatus, getAgentStatus } from "./AgentService";
 
 class TaskService {
   task: Task;
 
-  _sugarFile: string;
-
-  constructor() {
-    this._sugarFile = path.join(os.homedir(), ".sugar");
-    if (fs.existsSync(this._sugarFile)) {
-      const content = fs.readFileSync(this._sugarFile, "utf8");
-      this.task = JSON.parse(content);
-    }
-  }
-
-  _save = (task: Task): void => {
+  run = async (task: Task) => {
+    console.log("start task:");
     this.task = task;
-    fs.writeFileSync(this._sugarFile, JSON.stringify(task), "utf-8");
-  };
+    saveAgentStatus(AgentStatus.working);
+    for (let i = 0; i < task.steps.length; i++) {
+      const step = task.steps[i];
 
-  getAgentStatus = (): AgentStatus => {
-    if (!isEmpty(this.task)) {
-      if (
-        this.task.status == TaskStatus.completed ||
-        this.task.status == TaskStatus.failed
-      ) {
-        return AgentStatus.waiting;
-      } else {
-        return AgentStatus.working;
+      let command = "";
+
+      for (let j = 0; j < step.commands.length; j++) {
+        command += `echo \$ ${step.commands[j]}\n${step.commands[j]}\n`;
       }
-    } else {
-      return AgentStatus.waiting;
+
+      //const command = step.commands.join("\n");
+      const shfile = `/tmp/${task._id}.sh`;
+      console.log(shfile);
+      fs.writeFileSync(shfile, command, "utf-8");
+      const result = await this.runCommand(`sh ${shfile}`);
+      if (!result) {
+        task.status = TaskStatus.failed;
+        break;
+      }
     }
+    saveAgentStatus(AgentStatus.waiting);
   };
-  /**
-   *  export J=xxx
-   *  echo J
-   */
-  run = (task: Task): void => {
-    const ls = exec(
-      "sh ~/test.sh ",
-      { encoding: "utf-8", maxBuffer: 2048 * 2048 } /*options, [optional]*/,
-      (err, stdout, stderr) => {
-        if (err) {
-          // console.error(err);
+
+  runCommand = (command: string): Promise<boolean> => {
+    return new Promise((resolve, reject) => {
+      console.log(command);
+      let line = "";
+      const ls = exec(
+        command,
+        { encoding: "utf-8", maxBuffer: 2048 * 100000 },
+        (err, stdout, stderr) => {
+          if (err || stderr) {
+            resolve(false);
+            return;
+          }
+          resolve(true);
         }
-        //console.log("aaa:",stdout);
-      }
-    );
-    let line = "";
-    ls.stdout.on("data", function(data) {
-      line += data;
-      
-      if (data == "\n") {
+      );
+
+      const handler = (data: string) => {
+        if (line == "") {
+          //line += moment().format("YYYY-MM-DD hh:mm:ss") + " ";
+        }
+        line += data;
+        if (data.endsWith("\n") || data.endsWith("\r")) {
           process.stdout.write(line);
-        line = "";
-      }
+          line = "";
+        }
+      };
+      ls.stdout.on("data", handler);
+      ls.stderr.on("data", handler);
     });
-
-    ls.stderr.on("data", function(data) {
-      console.log("stderr: " + data);
-    });
-
-    ls.on("exit", function(code) {
-      console.log("child process exited with code " + code);
-    });
-
-    this._save(task);
   };
 }
 
