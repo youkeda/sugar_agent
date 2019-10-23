@@ -3,9 +3,11 @@ import path from "path";
 import os from "os";
 import { AgentStatus } from "../models/Agent";
 import { isEmpty } from "lodash";
+import { networkInterface as net } from "../util/Local";
 
 const _sugarFile = path.join(os.homedir(), ".sugar");
 const _agent: any = {};
+
 
 export const saveAgentStatus = (status: AgentStatus) => {
   _agent.status = status;

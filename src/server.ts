@@ -11,7 +11,7 @@ import { getAgentStatus } from "./api/AgentService";
 const socket = io(SUGAR_URI);
 
 function onTask(task: Task) {
-  taskService.run(task);
+  taskService.run(task,socket);
 }
 
 /**

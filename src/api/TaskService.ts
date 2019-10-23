@@ -12,29 +12,31 @@ import { saveAgentStatus, getAgentStatus } from "./AgentService";
 class TaskService {
   task: Task;
 
-  run = async (task: Task) => {
+  run = async (task: Task, socket: SocketIOClient.Socket) => {
     console.log("start task:");
     this.task = task;
     saveAgentStatus(AgentStatus.working);
+    socket.emit("task", { ...task, status: TaskStatus.working });
+
     for (let i = 0; i < task.steps.length; i++) {
       const step = task.steps[i];
 
-      let command = "";
-
+      const shfile = `/tmp/${task._id}.sh`;
+      let command = "echo $ ${shfile}";
       for (let j = 0; j < step.commands.length; j++) {
         command += `echo \$ ${step.commands[j]}\n${step.commands[j]}\n`;
       }
-
       //const command = step.commands.join("\n");
-      const shfile = `/tmp/${task._id}.sh`;
-      console.log(shfile);
       fs.writeFileSync(shfile, command, "utf-8");
       const result = await this.runCommand(`sh ${shfile}`);
       if (!result) {
         task.status = TaskStatus.failed;
+        socket.emit("task", { ...task, status: TaskStatus.failed });
         break;
       }
     }
+    socket.emit("task", { ...task, status: TaskStatus.completed });
+
     saveAgentStatus(AgentStatus.waiting);
   };
 
