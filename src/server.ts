@@ -11,7 +11,7 @@ import { getAgentStatus } from "./api/AgentService";
 const socket = io(SUGAR_URI);
 
 function onTask(task: Task) {
-  taskService.run(task,socket);
+  taskService.run(task, socket);
 }
 
 /**
@@ -37,6 +37,7 @@ function register(status: AgentStatus) {
   agent.hostname = hostname;
   agent.status = status;
   agent.sid = socket.id;
+  console.log("register", agent);
   socket.emit("register", agent);
 
   setTimeout(() => {
@@ -46,7 +47,7 @@ function register(status: AgentStatus) {
 
 function onRegister(isSuccess: any) {
   //接收服务器的注册任务
-  register(AgentStatus.creating);
+  register(AgentStatus.waiting);
 }
 
 async function init() {

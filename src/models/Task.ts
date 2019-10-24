@@ -16,11 +16,11 @@ export enum TaskResourceType {
   /**
    * git 资源类型
    */
-  git,
+  git = "git",
   /**
    *  tar 压缩类型
    */
-  gz
+  gz = "gz"
 }
 
 /**
