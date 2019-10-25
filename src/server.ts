@@ -8,21 +8,23 @@ import logger from "./util/logger";
 import { taskService } from "./api/TaskService";
 import { getAgentStatus } from "./api/AgentService";
 
-const socket = io(SUGAR_URI);
+const socketIo = io(`${SUGAR_URI}/agent`);
+const browserIo = io(`${SUGAR_URI}/browser`);
 
 function onTask(task: Task) {
-  taskService.run(task, socket);
+  taskService.run(task, socketIo, browserIo);
 }
+
 
 /**
  * 更新状态
  */
 function update() {
-  if (socket.connected) {
-    socket.emit("register", {
+  if (socketIo.connected) {
+    socketIo.emit("register", {
       mac: net.mac,
       status: getAgentStatus(),
-      sid: socket.id
+      sid: socketIo.id
     });
   }
   setTimeout(() => {
@@ -36,9 +38,9 @@ function register(status: AgentStatus) {
   agent.mac = net.mac;
   agent.hostname = hostname;
   agent.status = status;
-  agent.sid = socket.id;
+  agent.sid = socketIo.id;
   console.log("register", agent);
-  socket.emit("register", agent);
+  socketIo.emit("register", agent);
 
   setTimeout(() => {
     update();
@@ -51,14 +53,18 @@ function onRegister(isSuccess: any) {
 }
 
 async function init() {
-  socket.on("connect", function() {
+  socketIo.on("connect", function() {
     console.log("agent connect to", SUGAR_URI);
   });
-  socket.on("task", onTask);
-  socket.on("onRegister", onRegister);
+  socketIo.on("task", onTask);
+  socketIo.on("onRegister", onRegister);
 
-  socket.on("disconnect", function() {
+  socketIo.on("disconnect", function() {
     console.log("disconnected");
+  });
+
+  browserIo.on("connect", function() {
+    console.log("browserIo connected");
   });
 }
 

@@ -12,7 +12,11 @@ import { saveAgentStatus, workspace as root } from "./AgentService";
 class TaskService {
   task: Task;
 
-  run = async (task: Task, socket: SocketIOClient.Socket) => {
+  run = async (
+    task: Task,
+    socket: SocketIOClient.Socket,
+    browserSocket: SocketIOClient.Socket
+  ) => {
     console.log("start task:");
     this.task = task;
     saveAgentStatus(AgentStatus.working);
@@ -53,7 +57,12 @@ class TaskService {
       }
       //const command = step.commands.join("\n");
       fs.writeFileSync(shfile, command, "utf-8");
-      const result = await this.runCommand(task._id,workspace, `sh ${shfile}`,socket);
+      const result = await this.runCommand(
+        task._id,
+        workspace,
+        `sh ${shfile}`,
+        browserSocket
+      );
       if (!result) {
         task.status = TaskStatus.failed;
         break;
@@ -66,7 +75,12 @@ class TaskService {
     });
   };
 
-  runCommand = (taskId: string,workspace: string, command: string, socket: SocketIOClient.Socket): Promise<boolean> => {
+  runCommand = (
+    taskId: string,
+    workspace: string,
+    command: string,
+    browserSocket: SocketIOClient.Socket
+  ): Promise<boolean> => {
     return new Promise((resolve, reject) => {
       console.log(command);
       let line = "";
@@ -92,13 +106,13 @@ class TaskService {
         }
         line += data;
         if (data.endsWith("\n") || data.endsWith("\r")) {
-          line = line.replace(`${workspace}/project`,"");
+          line = line.replace(`${workspace}/project`, "");
           process.stdout.write(line);
           const message = new Message();
           message.taskId = taskId;
-          message.body= line;
+          message.body = line;
           message.time = moment().format("YYYY-MM-DD hh:mm:ss");
-          socket.emit("message",message);
+          browserSocket.emit("message", message);
           line = "";
         }
       };
