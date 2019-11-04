@@ -32,12 +32,11 @@ class TaskService {
     console.log(workspace);
     try {
       if (task.resourceType == TaskResourceType.gz) {
-        execSync(
-          `wget "${task.resourceUrl}" -O project.tar.gz;mkdir project;cd project;tar -zxvf ../project.tar.gz`,
-          {
-            cwd: workspace
-          }
-        );
+        const command = `wget "${task.resourceUrl}" -O project.tar.gz;mkdir project;cd project;tar -xvf ../project.tar.gz`;
+        console.log(command);
+        execSync(command, {
+          cwd: workspace
+        });
       } else {
         console.log(task.resourceUrl);
       }
