@@ -24,4 +24,4 @@ fi
 dockerName=registry.cn-hangzhou.aliyuncs.com/youkeda/sugar_agent:$(TZ=CST-8 date '+%Y%m%d-%H%M')
 
 docker build --no-cache -t $dockerName .
-#docker push $dockerName
+docker push $dockerName
