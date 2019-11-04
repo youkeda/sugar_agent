@@ -23,13 +23,17 @@ class TaskService {
     socket.emit("task", { ...task, status: TaskStatus.working });
 
     const workspace = `${root}/${task._id}`;
-    // 创建临时目录
-    fs.mkdirSync(workspace);
+
+    if (!fs.existsSync(workspace)) {
+      // 创建临时目录
+      fs.mkdirSync(workspace, { recursive: true });
+    }
+
     console.log(workspace);
     try {
       if (task.resourceType == TaskResourceType.gz) {
         execSync(
-          `wget ${task.resourceUrl} -O project.tar.gz;mkdir project;cd project;tar -zxvf ../project.tar.gz`,
+          `wget "${task.resourceUrl}" -O project.tar.gz;mkdir project;cd project;tar -zxvf ../project.tar.gz`,
           {
             cwd: workspace
           }

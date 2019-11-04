@@ -8,6 +8,7 @@ import logger from "./util/logger";
 import { taskService } from "./api/TaskService";
 import { getAgentStatus } from "./api/AgentService";
 
+
 const socketIo = io(`${SUGAR_URI}/agent`);
 const browserIo = io(`${SUGAR_URI}/browser`);
 
@@ -49,6 +50,7 @@ function register(status: AgentStatus) {
 
 function onRegister(isSuccess: any) {
   //接收服务器的注册任务
+  console.log(isSuccess);
   register(AgentStatus.waiting);
 }
 
