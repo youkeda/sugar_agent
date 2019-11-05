@@ -1,12 +1,12 @@
 #!/bin/sh
 
 
-image=$(docker images | grep 'registry-vpc.cn-hangzhou.aliyuncs.com/youkeda/sugar_agent' | awk '{print $3}')
+image=$(docker images | grep 'registry.cn-hangzhou.aliyuncs.com/youkeda/sugar_agent' | awk '{print $3}')
 if [ -n "$image" ] ; then
     docker rmi $image
 fi
 
-dockerName=registry-vpc.cn-hangzhou.aliyuncs.com/youkeda/sugar_agent:$1
+dockerName=registry.cn-hangzhou.aliyuncs.com/youkeda/sugar_agent:$1
 
 echo $dockerName
 
