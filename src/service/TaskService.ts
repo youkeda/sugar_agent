@@ -78,7 +78,6 @@ class TaskService {
       }
     }
     socket.emit("task", task);
-    browserSocket.emit("run_app_completed", task._id);
     saveAgentStatus(AgentStatus.waiting);
     exec(`rm -rf ${workspace}`, () => {
       console.log(`任务执行结束,清理 ${workspace}`);
@@ -103,10 +102,13 @@ class TaskService {
           shell:"/bin/bash"
         },
         (err, stdout, stderr) => {
+          console.log("结束任务:",taskId);
+          browserSocket.emit("completed", taskId);
           if (err || stderr) {
             resolve(false);
             return;
           }
+     
           resolve(true);
         }
       );
