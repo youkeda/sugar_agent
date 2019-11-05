@@ -60,6 +60,7 @@ class TaskService {
 
       const shfile = `${workspace}/step_${i}.sh`;
       let command = "";
+
       for (let j = 0; j < step.commands.length; j++) {
         command += `echo \$ ${step.commands[j]}\n${step.commands[j]}\n`;
       }
@@ -98,7 +99,8 @@ class TaskService {
         {
           encoding: "utf-8",
           maxBuffer: 2048 * 100000,
-          cwd: `${workspace}/project`
+          cwd: `${workspace}/project`,
+          shell:"/bin/bash"
         },
         (err, stdout, stderr) => {
           if (err || stderr) {
@@ -114,7 +116,8 @@ class TaskService {
           //line += moment().format("YYYY-MM-DD hh:mm:ss") + " ";
         }
         line += data;
-        if (data.endsWith("\n") || data.endsWith("\r")) {
+        //|| data.endsWith("\r")
+        if (data.endsWith("\n")) {
           line = line.replace(`${workspace}/project`, "");
           process.stdout.write(line);
           const message = new Message();

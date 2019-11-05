@@ -13,6 +13,7 @@ RUN apk add tzdata && cp /usr/share/zoneinfo/Asia/Shanghai /etc/localtime \
     && apk del tzdata
 RUN apk add git
 
+ADD bashrc /root/.bashrc
 ADD dist /root/app
 ADD settings.xml /root/.m2/
 ADD id_rsa.pub .ssh/id_rsa.pub

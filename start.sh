@@ -1,5 +1,11 @@
 #!/bin/sh
 
+instance=$(docker ps -a | grep "suagr_agent" | awk '{print $1}')
+
+if[ -n "$instance"];then
+    docker rm -f $instance
+fi
+
 
 image=$(docker images | grep 'registry.cn-hangzhou.aliyuncs.com/youkeda/sugar_agent' | awk '{print $3}')
 if [ -n "$image" ] ; then
