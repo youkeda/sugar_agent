@@ -3,11 +3,16 @@ import path from "path";
 import os from "os";
 import { AgentStatus } from "../models/Agent";
 import { Task, TaskStatus, TaskResourceType, Message } from "../models/Task";
-import { isEmpty } from "lodash";
-import { spawn, exec, execSync } from "child_process";
+import { exec, execSync } from "child_process";
 import moment from "moment";
 
-import { saveAgentStatus, workspace as root } from "./AgentService";
+import { saveAgentStatus } from "./AgentService";
+
+const root = path.join(os.homedir(), ".sugar");
+
+if (!fs.existsSync(root)) {
+  fs.mkdirSync(root);
+}
 
 class TaskService {
   task: Task;
