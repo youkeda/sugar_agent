@@ -2,7 +2,7 @@
 
 instance=$(docker ps -a | grep "suagr_agent" | awk '{print $1}')
 
-if[ -n "$instance"];then
+if[ -n "$instance"] ; then
     docker rm -f $instance
 fi
 
