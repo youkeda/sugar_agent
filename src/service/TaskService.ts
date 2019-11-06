@@ -62,8 +62,17 @@ class TaskService {
       let command = "";
 
       for (let j = 0; j < step.commands.length; j++) {
-        command += `echo \$ ${step.commands[j]}\n${step.commands[j]}\n`;
+        command += `echo "->" ${step.commands[j]}\n${step.commands[j]}\n`;
+        //加上判断，用于处理异常状态
+        
+        command += "if [ $? -ne 0 ]; then \n";
+        command += "  echo \n";
+        command += "  exit 1\n";
+        command += "fi\n";
+        
       }
+      command += "echo \n";
+      console.log(command);
       //const command = step.commands.join("\n");
       fs.writeFileSync(shfile, command, "utf-8");
       const result = await this.runCommand(
@@ -99,16 +108,16 @@ class TaskService {
           encoding: "utf-8",
           maxBuffer: 2048 * 100000,
           cwd: `${workspace}/project`,
-          shell:"/bin/bash"
+          shell: "/bin/bash"
         },
         (err, stdout, stderr) => {
-          console.log("结束任务:",taskId);
+          console.log("结束任务:", taskId);
           browserSocket.emit("completed", taskId);
           if (err || stderr) {
             resolve(false);
             return;
           }
-     
+
           resolve(true);
         }
       );
